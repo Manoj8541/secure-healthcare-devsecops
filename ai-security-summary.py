@@ -34,7 +34,7 @@ Keep response professional, concise, and suitable for an engineering/security re
 
 # Call Groq AI (Llama 3)
 response = client.chat.completions.create(
-    model="llama3-8b-8192",
+    model="llama-3.3-70b-versatile",
     messages=[
         {
             "role": "system",
@@ -50,7 +50,7 @@ response = client.chat.completions.create(
 )
 
 print("==========================================")
-print(" AI SECURITY ANALYSIS (Groq - Llama 3)")
+print(" AI SECURITY ANALYSIS (Groq - Llama 3.3)")
 print("==========================================")
 print(response.choices[0].message.content)
 print("==========================================")
