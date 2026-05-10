@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar">
+    <a href="/dashboard" class="brand">🏥 Health<span>Care</span></a>
+    <div class="nav-links">
+        <a href="/dashboard" class="active">Dashboard</a>
+        <a href="/patients">Patients</a>
+        <a href="/patients/add">Add Patient</a>
+        <form th:action="@{/logout}" method="post" style="display:inline;">
+            <button type="submit"
+                    style="background:none; border:none; color:white;
+                   cursor:pointer; font-size:15px; padding: 8px 16px;
+                   border-radius: 6px; transition: background 0.3s;"
+                    onmouseover="this.style.background='rgba(255,255,255,0.2)'"
+                    onmouseout="this.style.background='none'">
+                Logout
+            </button>
+        </form>
+    </div>
+</nav>
+
+<div class="container">
+
+    <div class="page-header">
+        <h2>Dashboard</h2>
+        <p style="color:#888;">
+            Welcome back,
+            <strong sec:authentication="name">Admin</strong>
+        </p>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="dashboard-cards">
+        <div class="card stat-card">
+            <div class="number" th:text="${totalPatients}">0</div>
+            <div class="label">Total Patients</div>
+        </div>
+        <div class="card stat-card" style="border-top-color: #2e7d32;">
+            <div class="number" style="color:#2e7d32;">3</div>
+            <div class="label">Active Cases</div>
+        </div>
+        <div class="card stat-card" style="border-top-color: #f57f17;">
+            <div class="number" style="color:#f57f17;">1</div>
+            <div class="label">Critical Cases</div>
+        </div>
+    </div>
+
+    <!-- Recent Patients Table -->
+    <div class="table-card">
+        <div style="padding: 20px 18px; border-bottom: 1px solid #f0f0f0;">
+            <h3 style="color:#333;">Recent Patients</h3>
+        </div>
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Age</th>
+                <th>Gender</th>
+                <th>Diagnosis</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="patient : ${patients}">
+                <td th:text="${patient.id}"></td>
+                <td th:text="${patient.name}"></td>
+                <td th:text="${patient.age}"></td>
+                <td>
+                        <span th:class="${patient.gender == 'Male'}
+                              ? 'badge badge-male' : 'badge badge-female'"
+                              th:text="${patient.gender}">
+                        </span>
+                </td>
+                <td th:text="${patient.diagnosis}"></td>
+                <td>
+                    <a th:href="@{/patients/edit/{id}(id=${patient.id})}"
+                       class="btn btn-warning btn-sm">Edit</a>
+                    <a th:href="@{/patients/delete/{id}(id=${patient.id})}"
+                       class="btn btn-danger btn-sm"
+                       onclick="return confirm('Delete this patient?')">
+                        Delete
+                    </a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+</body>
+</html>

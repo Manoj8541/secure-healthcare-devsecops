@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Patients</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar">
+    <a href="/dashboard" class="brand">🏥 Health<span>Care</span></a>
+    <div class="nav-links">
+        <a href="/dashboard">Dashboard</a>
+        <a href="/patients" class="active">Patients</a>
+        <a href="/patients/add">Add Patient</a>
+        <form th:action="@{/logout}" method="post" style="display:inline;">
+            <button type="submit"
+                    style="background:none; border:none; color:white;
+                   cursor:pointer; font-size:15px; padding: 8px 16px;
+                   border-radius: 6px; transition: background 0.3s;"
+                    onmouseover="this.style.background='rgba(255,255,255,0.2)'"
+                    onmouseout="this.style.background='none'">
+                Logout
+            </button>
+        </form>
+    </div>
+</nav>
+
+<div class="container">
+
+    <div class="page-header">
+        <h2>All Patients</h2>
+        <a href="/patients/add" class="btn btn-success">
+            + Add New Patient
+        </a>
+    </div>
+
+    <div class="table-card">
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Age</th>
+                <th>Gender</th>
+                <th>Phone</th>
+                <th>Diagnosis</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="patient : ${patients}">
+                <td th:text="${patient.id}"></td>
+                <td th:text="${patient.name}"></td>
+                <td th:text="${patient.age}"></td>
+                <td>
+                        <span th:class="${patient.gender == 'Male'}
+                              ? 'badge badge-male' : 'badge badge-female'"
+                              th:text="${patient.gender}">
+                        </span>
+                </td>
+                <td th:text="${patient.phone}"></td>
+                <td th:text="${patient.diagnosis}"></td>
+                <td>
+                    <a th:href="@{/patients/edit/{id}(id=${patient.id})}"
+                       class="btn btn-warning btn-sm">Edit</a>
+                    <a th:href="@{/patients/delete/{id}(id=${patient.id})}"
+                       class="btn btn-danger btn-sm"
+                       onclick="return confirm('Delete this patient?')">
+                        Delete
+                    </a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+</body>
+</html>
