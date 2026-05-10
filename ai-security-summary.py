@@ -1,19 +1,21 @@
 import os
-import sys
-from openai import OpenAI
+from groq import Groq
 
-client = OpenAI(
-    base_url="https://models.inference.ai.azure.com",
-    api_key=os.environ["GITHUB_TOKEN"]
+# Groq free API — Real AI (Llama 3)
+client = Groq(
+    api_key=os.environ["GROQ_API_KEY"]
 )
 
+# Read Trivy results
 trivy_results = ""
 try:
-    with open("trivy-results.txt", "r", encoding="utf-8", errors="ignore") as f:
+    with open("trivy-results.txt", "r",
+              encoding="utf-8", errors="ignore") as f:
         trivy_results = f.read()[:4000]
 except FileNotFoundError:
-    trivy_results = "No Trivy results file found (scan may have failed or artifact missing)."
+    trivy_results = "No Trivy results file found."
 
+# Build prompt
 prompt = f"""
 You are a DevSecOps security analyst for a healthcare application.
 
@@ -30,18 +32,25 @@ Security Scan Results (Trivy container scan):
 Keep response professional, concise, and suitable for an engineering/security review.
 """
 
+# Call Groq AI (Llama 3)
 response = client.chat.completions.create(
-    model="gpt-4o-mini",
+    model="llama3-8b-8192",
     messages=[
-        {"role": "system", "content": "You are a healthcare DevSecOps security expert."},
-        {"role": "user", "content": prompt}
+        {
+            "role": "system",
+            "content": "You are a healthcare DevSecOps security expert."
+        },
+        {
+            "role": "user",
+            "content": prompt
+        }
     ],
     max_tokens=600,
     temperature=0.3
 )
 
 print("==========================================")
-print(" AI SECURITY ANALYSIS (GitHub Models AI)")
+print(" AI SECURITY ANALYSIS (Groq - Llama 3)")
 print("==========================================")
 print(response.choices[0].message.content)
 print("==========================================")

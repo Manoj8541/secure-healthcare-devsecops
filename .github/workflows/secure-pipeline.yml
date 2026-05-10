@@ -280,9 +280,12 @@ jobs:
           name: trivy-results
         continue-on-error: true
 
+      - name: Install Groq SDK
+        run: pip install groq
+
       - name: Run AI Security Analysis
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
         run: python ai-security-summary.py
 
       - name: Final Pipeline Status
