@@ -91,7 +91,7 @@ jobs:
         uses: actions/checkout@v4.2.2
 
       - name: Setup Docker Buildx
-        uses: docker/setup-buildx-action@v3.10.0
+        uses: docker/setup-buildx-action@v4.0.0
 
       - name: Build Docker Image
         run: |
@@ -173,7 +173,7 @@ jobs:
         uses: actions/checkout@v4.2.2
 
       - name: Setup Docker Buildx
-        uses: docker/setup-buildx-action@v3.10.0
+        uses: docker/setup-buildx-action@v4.0.0
 
       - name: Build Docker Image for Scanning
         run: docker build -t healthcare-app:latest .
