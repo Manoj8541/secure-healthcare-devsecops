@@ -253,8 +253,8 @@ jobs:
           echo " DEPLOYMENT : ALLOWED ✅"
           echo "=========================================="
 
-  # ==============================
-  # JOB 7 — REAL AI SECURITY SUMMARY (GitHub Models)
+    # ==============================
+  # JOB 7 — AI SECURITY SUMMARY
   # ==============================
   ai-summary:
     name: AI Security Summary
@@ -271,17 +271,14 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install OpenAI SDK
-        run: pip install openai
+      - name: Install Groq SDK
+        run: pip install groq
 
       - name: Download Trivy Results
         uses: actions/download-artifact@v4
         with:
           name: trivy-results
         continue-on-error: true
-
-      - name: Install Groq SDK
-        run: pip install groq
 
       - name: Run AI Security Analysis
         env:
