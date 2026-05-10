@@ -303,9 +303,4 @@ This project is built for educational and portfolio demonstration purposes.
 **⭐ Star this repo if it helped you — it means a lot!**
 
 <br/>
-
-![Made with Love](https://img.shields.io/badge/Made%20with-❤️-red?style=for-the-badge)
-![DevSecOps](https://img.shields.io/badge/DevSecOps-Enterprise-blueviolet?style=for-the-badge)
-![Healthcare](https://img.shields.io/badge/Healthcare-HIPAA%20Ready-green?style=for-the-badge)
-
 </div>
