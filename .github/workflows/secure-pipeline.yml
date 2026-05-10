@@ -192,7 +192,7 @@ jobs:
 
       # TRIVY — Docker Image Scan
       - name: Trivy Docker Image Scan
-        uses: aquasecurity/trivy-action@0.30.0
+        uses: aquasecurity/trivy-action@master
         with:
           image-ref: healthcare-app:latest
           format: table
