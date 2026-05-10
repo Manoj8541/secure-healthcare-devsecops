@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🏥 Secure Healthcare DevSecOps
+# Secure Healthcare DevSecOps
 
 <img src="https://img.shields.io/badge/Spring%20Boot-4.0.6-brightgreen?style=for-the-badge&logo=springboot&logoColor=white"/>
 <img src="https://img.shields.io/badge/Java-17-orange?style=for-the-badge&logo=openjdk&logoColor=white"/>
@@ -32,7 +32,7 @@ A **production-ready**, **security-first** CI/CD pipeline built specifically for
 This project does not just build and deploy. It **scans, validates, enforces and blocks** — automatically.
 
 ```
-Push code → Scan → Test → Build → Secure → Gate → Deploy ✅ or Block 🚫
+Push code → Scan → Test → Build → Secure → Gate → Deploy  or Block 
 ```
 
 ---
@@ -41,13 +41,13 @@ Push code → Scan → Test → Build → Secure → Gate → Deploy ✅ or Bloc
 
 ```
 ╔══════════════════════════════════════════════════════════════════╗
-║              🏥  SECURE HEALTHCARE DEVSECOPS                    ║
+║              🏥  SECURE HEALTHCARE DEVSECOPS                     ║
 ╠══════════════════════════════════════════════════════════════════╣
 ║                                                                  ║
-║   ┌─────────────┐    ┌─────────────┐    ┌──────────────────┐   ║
-║   │  🍃 Spring  │───▶│  🐳 Docker  │───▶│ ⚙️ GitHub Actions│   ║
-║   │    Boot     │    │  Container  │    │   CI/CD Pipeline │   ║
-║   └─────────────┘    └─────────────┘    └──────────────────┘   ║
+║   ┌─────────────┐     ┌───────────────┐    ┌──────────────────────┐     ║
+║   │  🍃 Spring  │───▶│  🐳 Docker   │───▶│ ⚙️ GitHub Actions │   ║
+║   │    Boot     │     │  Container    │    │   CI/CD Pipeline │   ║
+║   └─────────────┘     └─────────────┘    └──────────────────┘   ║
 ║          │                  │                     │             ║
 ║          └──────────────────┴─────────────────────┘            ║
 ║                             │                                   ║
@@ -206,11 +206,6 @@ cd secure-healthcare-devsecops
 ```
 http://localhost:9090
 ```
-
-> **Default credentials:**
-> - 👤 Username: `admin`
-> - 🔑 Password: `password123`
-
 ---
 
 ## 🐳 Run with Docker
