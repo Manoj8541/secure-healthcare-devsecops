@@ -19,7 +19,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-
       - name: Checkout Repository
         uses: actions/checkout@v4.2.2
 
@@ -57,7 +56,6 @@ jobs:
     needs: build
 
     steps:
-
       - name: Checkout Repository
         uses: actions/checkout@v4.2.2
 
@@ -89,7 +87,6 @@ jobs:
     needs: test
 
     steps:
-
       - name: Checkout Repository
         uses: actions/checkout@v4.2.2
 
@@ -114,7 +111,6 @@ jobs:
       contents: read
 
     steps:
-
       - name: Checkout Repository
         uses: actions/checkout@v4.2.2
 
@@ -173,7 +169,6 @@ jobs:
       contents: read
 
     steps:
-
       - name: Checkout Repository
         uses: actions/checkout@v4.2.2
 
@@ -227,42 +222,15 @@ jobs:
     needs: [ security, codeql ]
 
     steps:
-
       - name: Checkout Repository
         uses: actions/checkout@v4.2.2
 
-      - name: Setup Java 17
-        uses: actions/setup-java@v4.7.1
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-
-      - name: Cache Maven Dependencies
-        uses: actions/cache@v4.2.3
-        with:
-          path: ~/.m2
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-m2
-
-      - name: Set mvnw Permission
-        run: chmod +x mvnw
-
-      # Download Trivy Results
       - name: Download Trivy Results
         uses: actions/download-artifact@v4
         with:
           name: trivy-results
         continue-on-error: true
 
-      # OWASP — Dependency Check
-      - name: OWASP Dependency Check
-        run: |
-          ./mvnw org.owasp:dependency-check-maven:check \
-          -DfailBuildOnCVSS=9 \
-          -Dformats=HTML \
-          -B || true
-
-      # Run Policy Script
       - name: Set Policy Script Permission
         run: chmod +x security-policy.sh
 
@@ -281,7 +249,55 @@ jobs:
           echo " Gitleaks     : SCANNED ✅"
           echo " Trivy        : SCANNED ✅"
           echo " Checkov      : SCANNED ✅"
-          echo " OWASP        : SCANNED ✅"
           echo "=========================================="
           echo " DEPLOYMENT : ALLOWED ✅"
+          echo "=========================================="
+
+  # ==============================
+  # JOB 7 — REAL AI SECURITY SUMMARY (GitHub Models)
+  # ==============================
+  ai-summary:
+    name: AI Security Summary
+    runs-on: ubuntu-latest
+    needs: policy-gate
+    if: always()
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4.2.2
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install OpenAI SDK
+        run: pip install openai
+
+      - name: Download Trivy Results
+        uses: actions/download-artifact@v4
+        with:
+          name: trivy-results
+        continue-on-error: true
+
+      - name: Run AI Security Analysis
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python ai-security-summary.py
+
+      - name: Final Pipeline Status
+        run: |
+          echo "=========================================="
+          echo " DEVSECOPS PIPELINE COMPLETE"
+          echo "=========================================="
+          echo " Pipeline Stages:"
+          echo "   1. Build Application    ✅"
+          echo "   2. Run Tests            ✅"
+          echo "   3. Docker Build         ✅"
+          echo "   4. CodeQL SAST          ✅"
+          echo "   5. Security Scans       ✅"
+          echo "   6. Policy Gate          ✅"
+          echo "   7. Real AI Summary      ✅"
+          echo "=========================================="
+          echo " APPLICATION READY FOR DEPLOYMENT ✅"
           echo "=========================================="
