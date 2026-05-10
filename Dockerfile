@@ -1,7 +1,7 @@
 # ================================
 # STAGE 1 — BUILD STAGE
 # ================================
-FROM eclipse-temurin:17-jdk-alpine AS builder
+FROM eclipse-temurin:25-jdk-alpine AS builder
 
 # Set working directory
 WORKDIR /app
@@ -23,7 +23,7 @@ RUN ./mvnw clean package -DskipTests -B
 # ================================
 # STAGE 2 — RUN STAGE
 # ================================
-FROM eclipse-temurin:17-jre-alpine AS runner
+FROM eclipse-temurin:25-jre-alpine AS runner
 
 # Security — create non-root user
 RUN addgroup -S healthgroup && \
