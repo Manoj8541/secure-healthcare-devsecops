@@ -2,7 +2,7 @@ name: Secure Healthcare DevSecOps Pipeline
 
 on:
   push:
-    branches: [ main, dev ]
+    branches: [ main, dev, security-demo-branch ]
   pull_request:
     branches: [ main ]
 
@@ -183,7 +183,6 @@ jobs:
         uses: gitleaks/gitleaks-action@v2.3.9
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        continue-on-error: true
 
       # TRIVY — Docker Image Scan
       - name: Trivy Docker Image Scan
