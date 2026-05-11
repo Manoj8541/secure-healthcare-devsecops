@@ -255,10 +255,10 @@ jobs:
     # ==============================
   # JOB 7 — AI SECURITY SUMMARY
   # ==============================
-  ai-summary:
+    ai-summary:
     name: AI Security Summary
     runs-on: ubuntu-latest
-    needs: policy-gate
+    needs: [ policy-gate, gitleaks, codeql ]
     if: always()
 
     steps:
@@ -282,6 +282,8 @@ jobs:
       - name: Run AI Security Analysis
         env:
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          GITLEAKS_RESULT: ${{ needs.gitleaks.result }}
+          CODEQL_RESULT: ${{ needs.codeql.result }}
         run: python ai-security-summary.py
 
       - name: Final Pipeline Status
