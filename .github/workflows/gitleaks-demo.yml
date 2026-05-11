@@ -1,0 +1,114 @@
+name: Demo 1 - Gitleaks Secret Detection
+
+on:
+  push:
+    branches:
+      - demo
+  pull_request:
+    branches:
+      - demo
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+
+  build:
+    name: Build Application
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4.2.2
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4.7.1
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Cache Maven Dependencies
+        uses: actions/cache@v4.2.3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      - name: Set mvnw Permission
+        run: chmod +x mvnw
+
+      - name: Build with Maven
+        run: ./mvnw clean package -DskipTests -B
+
+  gitleaks:
+    name: Gitleaks Secret Scan (EXPECTED FAILURE)
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2.3.9
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # NO continue-on-error — REAL failure shown
+
+  policy-gate:
+    name: Policy Gate - DEPLOYMENT BLOCKED
+    runs-on: ubuntu-latest
+    needs: gitleaks
+    if: always()
+    steps:
+      - name: Evaluate Gate
+        run: |
+          echo "=========================================="
+          echo "  POLICY ENFORCEMENT GATE"
+          echo "=========================================="
+          echo "  Gitleaks : ${{ needs.gitleaks.result }}"
+          echo "=========================================="
+          if [ "${{ needs.gitleaks.result }}" = "failure" ]; then
+            echo ""
+            echo "  DEPLOYMENT : BLOCKED"
+            echo "  Reason    : Hardcoded secrets detected"
+            echo "    -> AWS_KEY found in VulnerableDemo.java"
+            echo "    -> GITHUB_TOKEN found in VulnerableDemo.java"
+            echo "    -> DB_PASSWORD found in VulnerableDemo.java"
+            echo ""
+            echo "  Patient data at risk — deployment stopped"
+            echo "=========================================="
+            exit 1
+          else
+            echo "  DEPLOYMENT : ALLOWED"
+            echo "=========================================="
+          fi
+
+  ai-summary:
+    name: AI Security Summary
+    runs-on: ubuntu-latest
+    needs: [ gitleaks, policy-gate ]
+    if: always()
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4.2.2
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Groq SDK
+        run: pip install groq
+
+      - name: Run AI Summary
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          GITLEAKS_RESULT: ${{ needs.gitleaks.result }}
+          CODEQL_RESULT: "skipped"
+          PIPELINE_MODE: "DEMO_GITLEAKS"
+        run: python ai-security-summary.py

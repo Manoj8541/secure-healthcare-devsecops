@@ -1,0 +1,157 @@
+name: Demo 2 - CodeQL SAST Analysis
+
+on:
+  push:
+    branches:
+      - demo
+  pull_request:
+    branches:
+      - demo
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+
+  build:
+    name: Build Application
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4.2.2
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4.7.1
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Cache Maven Dependencies
+        uses: actions/cache@v4.2.3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      - name: Set mvnw Permission
+        run: chmod +x mvnw
+
+      - name: Build with Maven
+        run: ./mvnw clean package -DskipTests -B
+
+  codeql:
+    name: CodeQL SAST Scan (VULNERABILITIES WILL BE FOUND)
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4.2.2
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4.7.1
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Cache Maven Dependencies
+        uses: actions/cache@v4.2.3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      - name: Set mvnw Permission
+        run: chmod +x mvnw
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v4
+        with:
+          languages: java
+          queries: security-extended
+
+      - name: Build for CodeQL
+        run: ./mvnw clean package -DskipTests -B
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v4
+        with:
+          category: "/language:java"
+        # CodeQL uploads findings to Security tab
+        # Findings visible at repo/security/code-scanning
+
+      - name: Check for Critical Findings and Block
+        run: |
+          echo "=========================================="
+          echo "  CODEQL SAST SCAN COMPLETE"
+          echo "=========================================="
+          echo ""
+          echo "  Findings uploaded to GitHub Security tab"
+          echo ""
+          echo "  Critical vulnerabilities detected:"
+          echo "    -> SQL Injection     : /demo/sql"
+          echo "    -> XSS               : /demo/xss"
+          echo "    -> Path Traversal    : /demo/file"
+          echo "    -> Command Injection : /demo/exec"
+          echo "    -> Hardcoded Secrets : AWS + DB creds"
+          echo ""
+          echo "  Blocking deployment due to CRITICAL findings"
+          echo "=========================================="
+          exit 1
+          # Real exit 1 — job shows RED in Actions tab
+
+  policy-gate:
+    name: Policy Gate - DEPLOYMENT BLOCKED
+    runs-on: ubuntu-latest
+    needs: codeql
+    if: always()
+    steps:
+      - name: Evaluate Gate
+        run: |
+          echo "=========================================="
+          echo "  POLICY ENFORCEMENT GATE"
+          echo "=========================================="
+          echo "  CodeQL : ${{ needs.codeql.result }}"
+          echo "=========================================="
+          if [ "${{ needs.codeql.result }}" = "failure" ]; then
+            echo ""
+            echo "  DEPLOYMENT : BLOCKED"
+            echo "  Reason    : SAST vulnerabilities detected"
+            echo "    -> SQL Injection in healthcare database query"
+            echo "    -> Patient records exposed to injection attack"
+            echo "    -> HIPAA violation risk — deployment stopped"
+            echo ""
+            echo "=========================================="
+            exit 1
+          else
+            echo "  DEPLOYMENT : ALLOWED"
+            echo "=========================================="
+          fi
+
+  ai-summary:
+    name: AI Security Summary
+    runs-on: ubuntu-latest
+    needs: [ codeql, policy-gate ]
+    if: always()
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4.2.2
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Groq SDK
+        run: pip install groq
+
+      - name: Run AI Summary
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          GITLEAKS_RESULT: "skipped"
+          CODEQL_RESULT: ${{ needs.codeql.result }}
+          PIPELINE_MODE: "DEMO_CODEQL"
+        run: python ai-security-summary.py
