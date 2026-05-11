@@ -13,6 +13,22 @@ public class SecurityLogger {
     private static final Logger logger =
             LoggerFactory.getLogger(SecurityLogger.class);
 
+    // ─── Sanitize external input to prevent log injection ───────────────────
+    // Strips newlines, carriage returns, tabs that attackers use to
+    // forge fake log entries. CodeQL CWE-117 fix.
+    private String sanitize(String input) {
+        if (input == null) {
+            return "null";
+        }
+        // Remove characters used in log injection attacks
+        return input
+                .replace("\n", "_")
+                .replace("\r", "_")
+                .replace("\t", "_")
+                .replaceAll("[\\p{Cntrl}]", "_")  // all control characters
+                .trim();
+    }
+
     // Get client IP address
     private String getClientIP() {
         try {
@@ -25,7 +41,8 @@ public class SecurityLogger {
                 if (ip == null || ip.isEmpty()) {
                     ip = request.getRemoteAddr();
                 }
-                return ip;
+                // Sanitize IP too — X-Forwarded-For is user-controlled
+                return sanitize(ip);
             }
         } catch (Exception e) {
             return "unknown";
@@ -37,7 +54,7 @@ public class SecurityLogger {
     public void logSuccessfulLogin(String username) {
         logger.info(
                 "[SECURITY][LOGIN_SUCCESS] User: {} | IP: {} | Status: ALLOWED",
-                username, getClientIP()
+                sanitize(username), getClientIP()
         );
     }
 
@@ -45,7 +62,7 @@ public class SecurityLogger {
     public void logFailedLogin(String username) {
         logger.warn(
                 "[SECURITY][LOGIN_FAILED] User: {} | IP: {} | Status: BLOCKED",
-                username, getClientIP()
+                sanitize(username), getClientIP()
         );
     }
 
@@ -53,7 +70,7 @@ public class SecurityLogger {
     public void logUnauthorizedAccess(String endpoint) {
         logger.warn(
                 "[SECURITY][UNAUTHORIZED] Endpoint: {} | IP: {} | Status: BLOCKED",
-                endpoint, getClientIP()
+                sanitize(endpoint), getClientIP()
         );
     }
 
@@ -61,7 +78,7 @@ public class SecurityLogger {
     public void logSessionCreated(String username) {
         logger.info(
                 "[SECURITY][SESSION_CREATED] User: {} | IP: {}",
-                username, getClientIP()
+                sanitize(username), getClientIP()
         );
     }
 
@@ -69,7 +86,7 @@ public class SecurityLogger {
     public void logSessionDestroyed(String username) {
         logger.info(
                 "[SECURITY][SESSION_DESTROYED] User: {} | IP: {} | Status: LOGGED_OUT",
-                username, getClientIP()
+                sanitize(username), getClientIP()
         );
     }
 
@@ -77,7 +94,7 @@ public class SecurityLogger {
     public void logApiRequest(String method, String endpoint) {
         logger.info(
                 "[SECURITY][API_REQUEST] Method: {} | Endpoint: {} | IP: {}",
-                method, endpoint, getClientIP()
+                sanitize(method), sanitize(endpoint), getClientIP()
         );
     }
 
@@ -85,7 +102,7 @@ public class SecurityLogger {
     public void logPatientDataAccess(String username, String action, int patientId) {
         logger.info(
                 "[SECURITY][PATIENT_DATA] User: {} | Action: {} | PatientID: {} | IP: {}",
-                username, action, patientId, getClientIP()
+                sanitize(username), sanitize(action), patientId, getClientIP()
         );
     }
 
@@ -93,7 +110,7 @@ public class SecurityLogger {
     public void logSuspiciousActivity(String detail) {
         logger.error(
                 "[SECURITY][SUSPICIOUS] Detail: {} | IP: {}",
-                detail, getClientIP()
+                sanitize(detail), getClientIP()
         );
     }
 }

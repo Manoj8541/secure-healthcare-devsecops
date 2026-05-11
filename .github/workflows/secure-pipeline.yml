@@ -213,9 +213,6 @@ jobs:
           soft_fail: true
         continue-on-error: true
 
-  # ==============================
-  # JOB 6 — POLICY GATE
-  # ==============================
   policy-gate:
     name: Policy Enforcement Gate
     runs-on: ubuntu-latest
@@ -237,23 +234,38 @@ jobs:
       - name: Run Policy Enforcement
         run: ./security-policy.sh
 
+      # ── ADD THIS BLOCK ──────────────────────────────────────────
+      - name: Check CodeQL Gate
+        run: |
+          echo "Checking CodeQL scan result..."
+          if [ "${{ needs.codeql.result }}" != "success" ]; then
+            echo "=========================================="
+            echo " POLICY GATE FAILED"
+            echo " CodeQL SAST scan did not pass"
+            echo " Deployment BLOCKED"
+            echo "=========================================="
+            exit 1
+          fi
+          echo "CodeQL gate PASSED"
+      # ────────────────────────────────────────────────────────────
+
       - name: Deployment Allowed
         run: |
           echo "=========================================="
           echo " POLICY ENFORCEMENT GATE"
           echo "=========================================="
-          echo " Build        : PASSED ✅"
-          echo " Tests        : PASSED ✅"
-          echo " Docker Build : PASSED ✅"
-          echo " CodeQL SAST  : SCANNED ✅"
-          echo " Gitleaks     : SCANNED ✅"
-          echo " Trivy        : SCANNED ✅"
-          echo " Checkov      : SCANNED ✅"
+          echo " Build        : PASSED"
+          echo " Tests        : PASSED"
+          echo " Docker Build : PASSED"
+          echo " CodeQL SAST  : PASSED"
+          echo " Gitleaks     : SCANNED"
+          echo " Trivy        : SCANNED"
+          echo " Checkov      : SCANNED"
           echo "=========================================="
-          echo " DEPLOYMENT : ALLOWED ✅"
+          echo " DEPLOYMENT : ALLOWED"
           echo "=========================================="
 
-    # ==============================
+  # ==============================
   # JOB 7 — AI SECURITY SUMMARY
   # ==============================
   ai-summary:

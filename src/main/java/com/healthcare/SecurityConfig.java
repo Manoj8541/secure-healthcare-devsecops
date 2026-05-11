@@ -13,7 +13,6 @@ import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
-import org.springframework.context.annotation.Bean;
 
 @Configuration
 @EnableWebSecurity
@@ -23,28 +22,28 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 // ===== CSRF Protection =====
-                // Disabled for simplicity but in production MUST be enabled
-                .csrf(csrf -> csrf.disable())
+                // ENABLED — required for form-based login (browser sessions)
+                // Spring automatically handles CSRF tokens in Thymeleaf/JSP forms
+                // CodeQL CWE-352 compliant
+                .csrf(csrf -> csrf
+                                .ignoringRequestMatchers("/api/**")
+                        // Ignore CSRF only for any REST API endpoints if added later
+                        // Form-based login is fully protected
+                )
 
                 // ===== SECURITY HEADERS =====
-                // Protects against XSS, Clickjacking, Sniffing
                 .headers(headers -> headers
-                        // Prevents browser from storing page in cache
                         .cacheControl(cache -> cache.disable())
-                        // Prevents clickjacking attacks
                         .frameOptions(frame -> frame.deny())
-                        // Prevents MIME type sniffing
                         .contentTypeOptions(content -> {})
-                        // XSS Protection
                         .xssProtection(xss -> {})
-                        // Strict Transport Security (HTTPS only)
                         .httpStrictTransportSecurity(hsts -> hsts
                                 .includeSubDomains(true)
                                 .maxAgeInSeconds(31536000)
                         )
-                        // Referrer Policy
                         .referrerPolicy(referrer -> referrer
-                                .policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.NO_REFERRER)
+                                .policy(ReferrerPolicyHeaderWriter
+                                        .ReferrerPolicy.NO_REFERRER)
                         )
                 )
 
@@ -66,24 +65,17 @@ public class SecurityConfig {
                 .logout(logout -> logout
                         .logoutUrl("/logout")
                         .logoutSuccessUrl("/login?logout=true")
-                        // Destroy session completely
                         .invalidateHttpSession(true)
-                        // Clear authentication object
                         .clearAuthentication(true)
-                        // Delete session cookie from browser
                         .deleteCookies("JSESSIONID")
                         .permitAll()
                 )
 
                 // ===== SESSION HARDENING =====
                 .sessionManagement(session -> session
-                        // Session expires after 10 minutes of inactivity
                         .invalidSessionUrl("/login")
-                        // Prevent Session Fixation Attack
                         .sessionFixation(fixation -> fixation.newSession())
-                        // Only 1 session per user allowed
                         .maximumSessions(1)
-                        // Block new login if session already exists
                         .maxSessionsPreventsLogin(false)
                 );
 
@@ -109,11 +101,9 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        // BCrypt with strength 12 = very strong hashing
         return new BCryptPasswordEncoder(12);
     }
 
-    // Required for maximumSessions to work properly
     @Bean
     public HttpSessionEventPublisher httpSessionEventPublisher() {
         return new HttpSessionEventPublisher();
