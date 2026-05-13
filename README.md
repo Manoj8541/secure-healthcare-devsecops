@@ -17,7 +17,7 @@
 <br/>
 
 ![Pipeline](https://img.shields.io/badge/Pipeline-9%20Stages-blueviolet?style=flat-square)
-![Security](https://img.shields.io/badge/Security%20Tools-5%20Scanners-critical?style=flat-square)
+![Security](https://img.shields.io/badge/Security%20Tools-4%20Scanners-critical?style=flat-square)
 ![AI](https://img.shields.io/badge/AI-Groq%20Llama%203.3-ff69b4?style=flat-square)
 ![License](https://img.shields.io/badge/License-Educational-yellow?style=flat-square)
 
