@@ -86,13 +86,13 @@ public class SecurityConfig {
     public UserDetailsService userDetailsService() {
         UserDetails admin = User.builder()
                 .username("admin")
-                .password(passwordEncoder().encode("password123"))
+                .password(passwordEncoder().encode("ad@hc123"))
                 .roles("ADMIN")
                 .build();
 
         UserDetails doctor = User.builder()
                 .username("doctor")
-                .password(passwordEncoder().encode("doctor123"))
+                .password(passwordEncoder().encode("doc@hc123"))
                 .roles("USER")
                 .build();
 
