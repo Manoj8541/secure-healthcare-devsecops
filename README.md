@@ -223,7 +223,7 @@ Stage 9 ── 🤖 AI Summary     →  Groq LLM security report
 ### 1️⃣ Clone the Repository
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/secure-healthcare-devsecops.git
+git clone https://github.com/Manoj8541/secure-healthcare-devsecops.git
 cd secure-healthcare-devsecops
 ```
 
